@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RESOLV.AI // Card & Payment Dispute Investigation Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-branding">
+        <div class="brand-logo">
+          <span class="logo-icon">&#x26A1;</span>
+          <div class="brand-text">
+            <span class="brand-title">RESOLV.AI</span>
+            <span class="brand-tag">REGULATORY-CLOCK AGENT PIPELINE</span>
+          </div>
+        </div>
+        <div class="regime-chips">
+          <span class="chip chip-e" title="12 CFR 1005.11">US Reg E (Debit/ATM)</span>
+          <span class="chip chip-z" title="12 CFR 1026.13">US Reg Z (Credit)</span>
+          <span class="chip chip-psr" title="Payment Services Regulation">EU PSR (Refund Duty)</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-indicator" id="aiStatusContainer">
+          <span class="status-dot pulse-purple" id="aiStatusDot"></span>
+          <span id="aiStatusText">GEMINI ENGINE: <strong>LOCAL HYBRID</strong></span>
+        </div>
+        <div class="status-indicator">
+          <span class="status-dot pulse-green"></span>
+          <span>PEGA MCP: <strong>CONNECTED</strong></span>
+        </div>
+        <div class="status-indicator">
+          <span class="status-dot pulse-blue"></span>
+          <span>FED CLOCK: <strong>ACTIVE</strong></span>
+        </div>
+        <div class="analyst-badge">
+          <span class="analyst-avatar">JS</span>
+          <span class="analyst-name">J. Smith (Sr. Analyst)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scenario Quick Select Bar -->
+    <section class="scenario-bar">
+      <div class="scenario-label">
+        <span class="label-icon">&#x1F4CA;</span>
+        <span>PRESET REGULATORY SCENARIOS:</span>
+      </div>
+      <div class="scenario-buttons" id="scenarioButtons">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Main 3-Column Grid -->
+    <main class="workbench-grid">
+      <!-- COLUMN 1: Intake & Regulatory Clock -->
+      <section class="column col-intake">
+        <!-- Claim Intake Card -->
+        <div class="glass-card intake-card">
+          <div class="card-header">
+            <h3><span class="step-num">01</span> Claim Intake & Multimodal Parser</h3>
+            <span class="badge badge-accent" id="intakeRegimeBadge">Auto-Detect</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="claimTextInput">Customer Claim Transcript / Uploaded Notice</label>
+              <textarea id="claimTextInput" rows="5" placeholder="Paste customer claim text or transcribe inquiry..."></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="txnIdInput">Disputed Transaction ID</label>
+                <input type="text" id="txnIdInput" placeholder="e.g. TX-88201" />
+              </div>
+              <div class="form-group flex-1">
+                <label for="channelSelect">Intake Channel</label>
+                <select id="channelSelect">
+                  <option value="MOBILE_APP_CHAT">Mobile App Chat</option>
+                  <option value="EMAIL">Customer Email</option>
+                  <option value="PAPER_FORM_SCAN">Scanned Dispute Form</option>
+                  <option value="CALL_CENTER_TRANSCRIPT">Call Center Transcript</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" id="runInvestigationBtn">
+              <span class="btn-icon">&#x25B6;</span> Execute 5-Agent Investigation
+            </button>
+          </div>
+        </div>
+
+        <!-- Deterministic Regulatory Clock Sentinel Card -->
+        <div class="glass-card clock-card">
+          <div class="card-header">
+            <h3><span class="step-num">02</span> Regulatory Clock Sentinel</h3>
+            <span class="urgency-pill normal" id="clockUrgencyPill">NORMAL</span>
+          </div>
+          <div class="card-body">
+            <div class="countdown-hero">
+              <div class="countdown-title">MANDATORY PROVISIONAL CREDIT DEADLINE</div>
+              <div class="countdown-timer" id="provisionalCountdown">--d --h --m</div>
+              <div class="countdown-sub" id="provisionalDateStr">Target Date: Calculating...</div>
+            </div>
+
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="clockProgressFill" style="width: 25%;"></div>
+            </div>
+
+            <div class="milestones-table">
+              <div class="milestone-row">
+                <span class="m-label">Claim Notice Date ($T_0$):</span>
+                <span class="m-val" id="intakeDateVal">--</span>
+              </div>
+              <div class="milestone-row highlight">
+                <span class="m-label">Provisional Credit Cutoff:</span>
+                <span class="m-val" id="provDeadlineVal">--</span>
+              </div>
+              <div class="milestone-row">
+                <span class="m-label">Final Resolution Cutoff:</span>
+                <span class="m-val" id="finalDeadlineVal">--</span>
+              </div>
+              <div class="milestone-row">
+                <span class="m-label">Written Notice Deadline:</span>
+                <span class="m-val" id="noticeDeadlineVal">--</span>
+              </div>
+            </div>
+
+            <div class="statutory-cite-box">
+              <span class="cite-icon">&#x2696;</span>
+              <span class="cite-text" id="statutoryCiteText">12 CFR § 1005.11(c)(1) Enforcement</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMN 2: Agent Stepper & Evidence Dossier -->
+      <section class="column col-evidence">
+        <!-- Agent Pipeline Execution Stepper -->
+        <div class="glass-card stepper-card">
+          <div class="card-header">
+            <h3>Pipeline Execution Trace</h3>
+            <span class="badge badge-success" id="pipelineStateBadge">Ready</span>
+          </div>
+          <div class="stepper-list" id="stepperList">
+            <div class="step-item active" id="stepIntake">
+              <div class="step-icon">1</div>
+              <div class="step-info">
+                <div class="step-title">Intake & Regime Router</div>
+                <div class="step-desc" id="stepIntakeDesc">Extracts amount, card token, and statutory regime</div>
+              </div>
+            </div>
+            <div class="step-item active" id="stepClock">
+              <div class="step-icon">2</div>
+              <div class="step-info">
+                <div class="step-title">Regulatory Clock Sentinel</div>
+                <div class="step-desc" id="stepClockDesc">Computes 10-business-day / 45-day statutory deadlines</div>
+              </div>
+            </div>
+            <div class="step-item active" id="stepEvidence">
+              <div class="step-icon">3</div>
+              <div class="step-info">
+                <div class="step-title">Evidence Harvester</div>
+                <div class="step-desc" id="stepEvidenceDesc">Harvests 3DS, IP, merchant registry & dispute telemetry</div>
+              </div>
+            </div>
+            <div class="step-item active" id="stepAssess">
+              <div class="step-icon">4</div>
+              <div class="step-info">
+                <div class="step-title">Policy Assessment & Adjudication</div>
+                <div class="step-desc" id="stepAssessDesc">Verifies facts against statutory liability rules</div>
+              </div>
+            </div>
+            <div class="step-item active" id="stepLetter">
+              <div class="step-icon">5</div>
+              <div class="step-info">
+                <div class="step-title">Fed-Compliant Letter Generator</div>
+                <div class="step-desc" id="stepLetterDesc">Drafts bespoke factual notice with relied-upon documents</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence Dossier Inspector -->
+        <div class="glass-card dossier-card">
+          <div class="card-header">
+            <h3><span class="step-num">03</span> Harvested Evidence Dossier</h3>
+            <span class="badge" id="evidenceCountBadge">4 Artifacts</span>
+          </div>
+          <div class="card-body">
+            <div class="evidence-list" id="evidenceList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMN 3: Decision, Fed-Compliant Letter & HITL Console -->
+      <section class="column col-decision">
+        <!-- Adjudication Proposal Card -->
+        <div class="glass-card decision-card">
+          <div class="card-header">
+            <h3><span class="step-num">04</span> Proposed Adjudication</h3>
+            <div class="confidence-tag" id="confidenceTag">Confidence: 99%</div>
+          </div>
+          <div class="card-body">
+            <div class="decision-banner" id="decisionBanner">
+              <div class="decision-title" id="decisionOutcomeTitle">GRANT_PROVISIONAL_CREDIT</div>
+              <div class="decision-subtitle" id="decisionOutcomeSub">12 CFR § 1005.11(c)(1) Mandatory Credit</div>
+            </div>
+
+            <div class="statutory-tests-container">
+              <div class="section-title-sm">Statutory Test Verification Matrix</div>
+              <div class="tests-list" id="statutoryTestsList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fed Compliance Letter Inspector -->
+        <div class="glass-card letter-card">
+          <div class="card-header">
+            <h3><span class="step-num">05</span> Determination Letter Inspector</h3>
+            <div class="tabs-header">
+              <button class="tab-btn active" id="tabAfterBtn">Fed-Compliant Notice</button>
+              <button class="tab-btn" id="tabBeforeBtn">Legacy Violation Template</button>
+            </div>
+          </div>
+          <div class="card-body letter-body">
+            <!-- Tab 1: Fed-Compliant Notice -->
+            <div class="tab-content active" id="tabAfterContent">
+              <div class="compliance-badge-row">
+                <span class="badge-compliant">&#x2714; Fed 2026 Compliant</span>
+                <span class="badge-sub">Granular Factual Citations • Zero Boilerplate</span>
+              </div>
+              <div class="letter-preview" id="letterTextPreview">
+                <!-- Injected via JavaScript -->
+              </div>
+              <div class="relied-docs-box">
+                <div class="relied-title">&#x1F4C4; Itemized Relied-Upon Documents (12 CFR § 1005.11(c)(2)(iv)):</div>
+                <ul class="relied-list" id="reliedDocsList">
+                  <!-- Injected via JavaScript -->
+                </ul>
+              </div>
+            </div>
+
+            <!-- Tab 2: Legacy Boilerplate Violation -->
+            <div class="tab-content" id="tabBeforeContent">
+              <div class="violation-banner">
+                <span class="warn-icon">&#x26A0;</span>
+                <div>
+                  <strong>FEDERAL RESERVE 2026 SUPERVISORY VIOLATION</strong>
+                  <p>Examiners sanctioned institutions using generic denial explanations that fail to cite facts or provide relied-upon evidence.</p>
+                </div>
+              </div>
+              <div class="letter-preview violation-text">
+                <p>Dear Customer,</p>
+                <p>We received your inquiry regarding transaction #[TRANSACTION_ID].</p>
+                <p style="background: rgba(239, 68, 68, 0.2); padding: 8px; border-radius: 4px; border-left: 3px solid #ef4444;">
+                  <strong>"Our records indicate that no error occurred. Your dispute claim is closed."</strong>
+                </p>
+                <p>Thank you for banking with us.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Human-in-the-Loop Analyst Console -->
+        <div class="glass-card hitl-card">
+          <div class="card-header">
+            <h3>Human-in-the-Loop Sign-off & Execution Gate</h3>
+            <span class="badge badge-warning" id="approvalStatusBadge">Pending Approval</span>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="analystNotesInput">Dispute Analyst Verification Notes</label>
+              <input type="text" id="analystNotesInput" value="Verified 3DS/IP evidence against core banking ledger. Statutory criteria met." />
+            </div>
+
+            <div class="action-buttons-row">
+              <button class="btn btn-success flex-1" id="approveActionBtn">
+                &#x2714; Sign-off & Dispatch Ledger Posting
+              </button>
+              <button class="btn btn-outline" id="overrideActionBtn">
+                Override Decision
+              </button>
+            </div>
+
+            <div class="execution-receipt" id="executionReceipt" style="display: none;">
+              <div class="receipt-header">&#x1F4DC; Mock Core Banking Ledger Posting Receipt</div>
+              <pre class="receipt-code" id="receiptJson"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
