@@ -19,6 +19,7 @@ from backend.models.dispute import (
     RegulatoryRegime,
 )
 from backend.agents.pipeline import SequentialDisputePipeline
+from backend.neuro.neuro_engine import NeuroDisputeEngine
 from backend.engine.regulatory_clock import RegulatoryClockEngine
 from backend.tools.evidence_tools import EvidenceTools
 from backend.tools.enterprise_data import MOCK_TRANSACTIONS_DB
@@ -50,6 +51,7 @@ class IngestClaimRequest(BaseModel):
     channel: ChannelType = ChannelType.MOBILE_APP_CHAT
     transaction_id: Optional[str] = None
     attachment_paths: List[str] = Field(default_factory=list)
+    engine: Optional[str] = "native"  # "native" or "neuro" (Cognizant Neuro Studio)
 
 
 class AnalystApprovalRequest(BaseModel):
@@ -123,15 +125,15 @@ _initialized = False
 def ensure_demo_cases():
     global _initialized
     if not _initialized:
-        # Pre-populate scenario 1 only so UI has instant initial state
-        sc = DEMO_SCENARIOS[0]
-        case = SequentialDisputePipeline.run_investigation(
-            claim_id="CLM-1",
-            cardholder_id=sc["cardholder_id"],
-            raw_text=sc["claim_text"],
-            transaction_id=sc["transaction_id"],
-        )
-        ACTIVE_CASES_DB[case.case_id] = case
+        # Pre-populate all 4 canonical scenarios via Cognizant Neuro Engine
+        for idx, sc in enumerate(DEMO_SCENARIOS):
+            case = NeuroDisputeEngine.run_neuro_investigation(
+                claim_id=f"CLM-{idx + 1}",
+                cardholder_id=sc["cardholder_id"],
+                raw_text=sc["claim_text"],
+                transaction_id=sc["transaction_id"],
+            )
+            ACTIVE_CASES_DB[case.case_id] = case
         _initialized = True
 
 
@@ -139,13 +141,41 @@ def ensure_demo_cases():
 
 @app.get("/api/health")
 def health_check():
+    ensure_demo_cases()
     from backend.engine.gemini_client import GeminiClient
     ai_status = "LIVE_GEMINI" if GeminiClient.is_ai_live() else "LOCAL_HYBRID"
     return {
         "status": "healthy",
         "service": "Card & Payment Dispute Investigation Agent",
         "ai_engine": ai_status,
+        "neuro_studio": "CONNECTED",
         "active_cases": len(ACTIVE_CASES_DB),
+    }
+
+
+@app.get("/api/neuro/network")
+def get_neuro_network_topology():
+    """
+    Returns Cognizant Neuro® San HOCON network specification and manifest info.
+    """
+    hocon_file = os.path.join(os.path.dirname(__file__), "..", "neuro", "resolv_network.hocon")
+    manifest_file = os.path.join(os.path.dirname(__file__), "..", "neuro", "manifest.hocon")
+    
+    hocon_content = ""
+    manifest_content = ""
+    if os.path.exists(hocon_file):
+        with open(hocon_file, "r", encoding="utf-8") as f:
+            hocon_content = f.read()
+    if os.path.exists(manifest_file):
+        with open(manifest_file, "r", encoding="utf-8") as f:
+            manifest_content = f.read()
+
+    return {
+        "network_id": NeuroDisputeEngine.NETWORK_ID,
+        "front_man_agent": NeuroDisputeEngine.ENTRY_AGENT,
+        "status": "ACTIVE",
+        "hocon_specification": hocon_content,
+        "manifest": manifest_content,
     }
 
 
@@ -174,17 +204,27 @@ def get_case(case_id: str):
 @app.post("/api/disputes/investigate")
 def run_investigation_endpoint(req: IngestClaimRequest):
     """
-    Submits a dispute claim to the 5-stage sequential agent pipeline.
+    Submits a dispute claim to the 5-stage sequential agent pipeline or Cognizant Neuro Engine.
     """
     claim_id = req.claim_id or f"CLM-{len(ACTIVE_CASES_DB) + 101}"
-    case = SequentialDisputePipeline.run_investigation(
-        claim_id=claim_id,
-        cardholder_id=req.cardholder_id,
-        raw_text=req.raw_text,
-        channel=req.channel,
-        transaction_id=req.transaction_id,
-        attachment_paths=req.attachment_paths,
-    )
+    if req.engine == "neuro":
+        case = NeuroDisputeEngine.run_neuro_investigation(
+            claim_id=claim_id,
+            cardholder_id=req.cardholder_id,
+            raw_text=req.raw_text,
+            channel=req.channel,
+            transaction_id=req.transaction_id,
+            attachment_paths=req.attachment_paths,
+        )
+    else:
+        case = SequentialDisputePipeline.run_investigation(
+            claim_id=claim_id,
+            cardholder_id=req.cardholder_id,
+            raw_text=req.raw_text,
+            channel=req.channel,
+            transaction_id=req.transaction_id,
+            attachment_paths=req.attachment_paths,
+        )
     ACTIVE_CASES_DB[case.case_id] = case
     return case
 
@@ -253,7 +293,7 @@ def pega_mcp_bridge(req: PegaMCPRequest):
         txn_id = args.get("transaction_id")
         cardholder_id = args.get("cardholder_id", "CUST-1049")
         claim_id = args.get("pega_case_id", f"PEGA-{len(ACTIVE_CASES_DB)+1}")
-        case = SequentialDisputePipeline.run_investigation(
+        case = NeuroDisputeEngine.run_neuro_investigation(
             claim_id=claim_id,
             cardholder_id=cardholder_id,
             raw_text=raw_text,

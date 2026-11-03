@@ -171,6 +171,7 @@ async function runInvestigation() {
       raw_text: rawText,
       transaction_id: txnId || undefined,
       channel: channel,
+      engine: "neuro",
     };
 
     const res = await fetch("/api/disputes/investigate", {

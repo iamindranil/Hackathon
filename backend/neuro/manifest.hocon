@@ -1,0 +1,16 @@
+# Cognizant Neuro® San - Manifest Configuration
+# Registers networks discoverable by the Neuro San runtime and studio playground (nsflow)
+
+{
+  "networks": [
+    {
+      "id": "resolv-dispute-investigation",
+      "name": "RESOLV.AI Regulatory Dispute Network",
+      "hocon_path": "backend/neuro/resolv_network.hocon",
+      "entry_agent": "ResolvFrontManRouter",
+      "category": "Financial Services / Regulatory Compliance",
+      "tags": ["Reg E", "Reg Z", "EU PSR", "CFPB", "Multi-Agent"]
+    }
+  ]
+}
+

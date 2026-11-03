@@ -1,0 +1,139 @@
+# Cognizant Neuro® San - Multi-Agent Network Definition
+# Domain: Autonomous Banking Dispute Investigation & Regulatory Clock Sentinel
+# Architecture: AAOSA (Asynchronous Autonomous Open System of Agents)
+
+{
+  "name": "resolv_dispute_network",
+  "version": "1.0.0",
+  "description": "Cognizant Neuro AI Network for automated payment dispute investigation compliant with US Reg E, Reg Z, and EU PSR.",
+
+  # Top-level array of agents and coded tools
+  # As per Neuro San standards, the first agent is the Front Man (the primary orchestrator/router)
+  "tools": [
+    # --------------------------------------------------------------------------
+    # 1. FRONT MAN AGENT (Primary Ingestion, Orchestrator & Router)
+    # --------------------------------------------------------------------------
+    {
+      "name": "ResolvFrontManRouter",
+      "function": "Primary client-facing router for payment disputes. Parses natural language claims, classifies regime, and coordinates downstream internal agents.",
+      "instructions": """
+        You are the Front Man of the RESOLV.AI multi-agent dispute investigation network.
+        Your responsibility:
+        1. Ingest customer complaint messages across chat, email, and paper scans.
+        2. Detect transaction identifiers (e.g., TX-XXXXX) and account types.
+        3. Delegate tasks in sequence to:
+           - RegulatoryClockSentinelAgent (compute statutory calendar deadlines)
+           - EvidenceHarvesterAgent (gather telemetry, biometrics, and fulfillment proof)
+           - PolicyAdjudicationAgent (evaluate facts against statutory liability rules)
+           - FedLetterDrafterAgent (produce non-boilerplate determination notice)
+      """,
+      "tools": [
+        "RegulatoryClockSentinelAgent",
+        "EvidenceHarvesterAgent",
+        "PolicyAdjudicationAgent",
+        "FedLetterDrafterAgent"
+      ]
+    },
+
+    # --------------------------------------------------------------------------
+    # 2. INTERNAL AGENT: Regulatory Clock Sentinel
+    # --------------------------------------------------------------------------
+    {
+      "name": "RegulatoryClockSentinelAgent",
+      "function": "Enforces non-probabilistic banking calendars, skipping US Federal Reserve holidays and weekends to derive statutory SLAs.",
+      "instructions": """
+        You are the statutory clock guardian.
+        Call 'compute_statutory_clock' with the exact regulatory regime and claim notice date.
+        Never approximate or hallucinate calendar days. Enforce:
+        - Reg E (12 CFR 1005.11): 10 business days provisional credit cutoff; 45/90 day resolution.
+        - Reg Z (12 CFR 1026.13): 30 days acknowledgment; 2 billing cycles resolution.
+        - EU PSR: Immediate D+1 refund deadline.
+      """,
+      "tools": [
+        "compute_statutory_clock"
+      ]
+    },
+
+    # --------------------------------------------------------------------------
+    # 3. INTERNAL AGENT: Evidence Harvester & Intelligence Agent
+    # --------------------------------------------------------------------------
+    {
+      "name": "EvidenceHarvesterAgent",
+      "function": "Queries core banking ledger, 3DS 2.2 FIDO biometrics, device/IP geolocation, carrier tracking, and dispute risk history.",
+      "instructions": """
+        Gather all necessary evidentiary artifacts for the disputed transaction:
+        1. Call 'harvest_transaction_telemetry' for POS entry mode and auth method.
+        2. Call 'harvest_security_telemetry' for IP vs. home address and impossible travel flags.
+        3. Call 'harvest_merchant_fulfillment' for carrier tracking or console gameplay proof.
+        4. Call 'harvest_dispute_history' for customer tenure and prior claim frequency.
+        Synthesize all indicators into an evidence dossier.
+      """,
+      "tools": [
+        "harvest_transaction_telemetry",
+        "harvest_security_telemetry",
+        "harvest_merchant_fulfillment",
+        "harvest_dispute_history"
+      ]
+    },
+
+    # --------------------------------------------------------------------------
+    # 4. INTERNAL AGENT: Policy Adjudication & Statutory Test Reasoner
+    # --------------------------------------------------------------------------
+    {
+      "name": "PolicyAdjudicationAgent",
+      "function": "Evaluates assembled evidence dossier against statutory dispute liability rules and assigns legal findings.",
+      "instructions": """
+        Evaluate the claim and evidence dossier against federal statutory rules:
+        - Reg E Debit (12 CFR 1005.2(m)): If transaction exhibits impossible travel or mag-stripe cloning, issue GRANT_PROVISIONAL_CREDIT. If verified with FIDO FaceID on home WiFi with digital usage, issue DENY_CLAIM.
+        - Reg Z Credit (12 CFR 1026.13): If carrier confirms damaged return without merchant refund, issue CHARGEBACK_INITIATED under Reason Code 4855.
+        - EU PSR: If telecom spoofing is confirmed, issue APPROVE_IMMEDIATE_REFUND.
+      """,
+      "tools": []
+    },
+
+    # --------------------------------------------------------------------------
+    # 5. INTERNAL AGENT: Fed-Compliant Determination Letter Generator
+    # --------------------------------------------------------------------------
+    {
+      "name": "FedLetterDrafterAgent",
+      "function": "Authors bespoke factual determination notices with itemized relied-upon documents, strictly eliminating generic boilerplate.",
+      "instructions": """
+        Draft a formal customer determination letter:
+        - NEVER use generic boilerplate such as 'our records show no error occurred' (addresses Federal Reserve 2026 enforcement findings).
+        - Detail the exact forensic facts (IP geolocation, device model, console serial number, carrier tracking date).
+        - Disclose customer inspection rights under 12 CFR 1005.11(c)(2)(iv) and list all relied-upon evidence artifacts.
+      """,
+      "tools": []
+    },
+
+    # --------------------------------------------------------------------------
+    # 6. CODED TOOLS (Deterministic Python Class Bindings)
+    # --------------------------------------------------------------------------
+    {
+      "name": "compute_statutory_clock",
+      "description": "Calculates regulatory SLAs skipping Fed holidays and weekends.",
+      "class": "backend.neuro.coded_tools.ComputeStatutoryClockTool"
+    },
+    {
+      "name": "harvest_transaction_telemetry",
+      "description": "Retrieves core banking transaction metadata and POS auth details.",
+      "class": "backend.neuro.coded_tools.HarvestTransactionTelemetryTool"
+    },
+    {
+      "name": "harvest_security_telemetry",
+      "description": "Analyzes IP geolocation, device fingerprint, and FIDO FaceID biometrics.",
+      "class": "backend.neuro.coded_tools.HarvestSecurityTelemetryTool"
+    },
+    {
+      "name": "harvest_merchant_fulfillment",
+      "description": "Verifies carrier delivery status and digital activation records.",
+      "class": "backend.neuro.coded_tools.HarvestMerchantFulfillmentTool"
+    },
+    {
+      "name": "harvest_dispute_history",
+      "description": "Queries cardholder dispute history and friendly fraud score.",
+      "class": "backend.neuro.coded_tools.HarvestDisputeHistoryTool"
+    }
+  ]
+}
+

@@ -155,8 +155,14 @@ Pega Smart Dispute  <--->  [POST /api/pega/mcp/invoke]  <--->  RESOLV.AI Agents
 │   │   ├── letter_agent.py     # Agent 5: Fed-compliant determination letter generator
 │   │   └── pipeline.py         # Sequential pipeline orchestrator & HITL execution
 │   │
+│   ├── neuro/                  # Cognizant Neuro® AI Multi-Agent Network (Neuro San)
+│   │   ├── resolv_network.hocon# Declarative HOCON multi-agent topology (Front Man + Internal Agents)
+│   │   ├── manifest.hocon      # Neuro San network manifest registration
+│   │   ├── coded_tools.py      # Coded Tools for regulatory calendars & banking telemetry
+│   │   └── neuro_engine.py     # Neuro San compliant runtime orchestrator
+│   │
 │   ├── api/
-│   │   └── app.py              # FastAPI REST API & Pega MCP Protocol Bridge
+│   │   └── app.py              # FastAPI REST API, Cognizant Neuro Engine & Pega MCP Protocol Bridge
 │   │
 │   ├── engine/
 │   │   ├── gemini_client.py    # Google GenAI SDK wrapper (Gemini 3.5/3.8 Flash)
@@ -198,7 +204,10 @@ python tests/test_evidence_tools.py
 python tests/test_sequential_pipeline.py
 
 # 4. Test REST API and Pega MCP endpoints
-python tests/test_api_and_mcp.py
+python -m tests.test_api_and_mcp
+
+# 5. Test Cognizant Neuro® San Multi-Agent integration & CodedTools
+python -m tests.test_neuro_integration
 ```
 
 ---
